@@ -1,31 +1,66 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BookList from "./components/BookList";
 import BookCreate from "./components/BookCreate";
+
+const URL = `http://localhost:3001/`;
 
 function App() {
 	const [books, setBooks] = useState([]);
 
-	const addBook = (title) => {
-		const updatedBooks = [
-			...books,
-			{ id: Math.round(Math.random() * 9999), title },
-		];
+	const getAllBooks = async () => {
+		const result = await fetch(`${URL}books`, {
+			method: "GET",
+		});
+
+		const users = await result.json();
+		setBooks(users);
+	};
+
+	/** DONT DO THIS */
+	// getAllBooks(); infinite loop of rerendering the APP component
+
+	useEffect(() => {
+		getAllBooks();
+	}, []);
+
+	const addBook = async (title) => {
+		const result = await fetch(`${URL}books`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ title }),
+		});
+
+		const user = await result.json();
+		setBooks([...books, user]);
+	};
+
+	const editBookById = async (title, id) => {
+		const result = await fetch(`${URL}books/${id}`, {
+			method: "PUT",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ title }),
+		});
+
+		const user = await result.json();
+
+		const updatedBooks = books.map((book) => {
+			if (book.id === id) return { ...book, ...user }; //all the property in books which are similar in user will be replaced by user property
+			return book;
+		});
 		setBooks(updatedBooks);
 	};
 
-	const editBook = (title, id) => {
-		const updateBooks = books.map((book) => {
-			if (book.id === id) return { ...book, title };
-			return book;
+	const deleteBookById = async (id) => {
+		await fetch(`${URL}books/${id}`, {
+			method: "DELETE",
 		});
-		setBooks(updateBooks);
-	};
 
-	const deleteBookById = (id) => {
-		const filteredBooks = books.filter((book) => {
-			return book.id !== id;
-		});
-		setBooks(filteredBooks);
+		const updatedBooks = books.filter((book) => book.id !== id);
+		setBooks(updatedBooks);
 	};
 	return (
 		<div className="app">
@@ -33,7 +68,7 @@ function App() {
 			<BookList
 				books={books}
 				onDeleteBookById={deleteBookById}
-				onEditBook={editBook}
+				onEditBook={editBookById}
 			/>
 			<BookCreate onAddBook={addBook} />
 		</div>
