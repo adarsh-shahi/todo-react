@@ -4,13 +4,13 @@ import BookCreate from "./components/BookCreate";
 import BooksContext from "./context/books";
 
 function App() {
-	const { getAllBooks } = useContext(BooksContext);
+	const { stableGetAllBooks } = useContext(BooksContext);
 
 	/** DONT DO THIS */
 	// getAllBooks(); infinite loop of rerendering the APP component
 	useEffect(() => {
-		getAllBooks();
-	}, []);
+		stableGetAllBooks();
+	}, [stableGetAllBooks]);
 
 	return (
 		<div className="app">

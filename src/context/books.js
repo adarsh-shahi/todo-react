@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useCallback, useState } from "react";
 
 const BooksContext = new createContext();
 const URL = `http://localhost:3001/`;
@@ -14,6 +14,8 @@ function Provider({ children }) {
 		const users = await result.json();
 		setBooks(users);
 	};
+
+	const stableGetAllBooks = useCallback(getAllBooks, []);
 
 	const addBook = async (title) => {
 		const result = await fetch(`${URL}books`, {
@@ -60,7 +62,7 @@ function Provider({ children }) {
 		addBook,
 		editBookById,
 		deleteBookById,
-		getAllBooks,
+		stableGetAllBooks,
 	};
 
 	return (
